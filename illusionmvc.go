@@ -1,4 +1,4 @@
-package illusion
+package illusionmvc
 
 import (
 	"github.com/lyzzz123/illusionmvc/config"
