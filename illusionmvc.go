@@ -5,11 +5,10 @@ import (
 	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
+	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
-	"github.com/lyzzz123/illusionmvc/listener"
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/service"
-	"net/http"
 )
 
 var illusionService = &service.IllusionService{}
@@ -54,13 +53,14 @@ func init() {
 	illusionService.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
 	illusionService.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
 
+	illusionService.RegisterStaticHandler(&handler.DefaultStaticHandler{
+		StaticPaths: "/static",
+		StaticDir:   "D:\\temp",
+	})
+
 	illusionService.RegisterBusinessExceptionHandler(&exceptionhandler.DefaultBusinessExceptionHandler{})
 	illusionService.RegisterSystemExceptionHandler(&exceptionhandler.DefaultSystemExceptionHandler{})
 
-}
-
-func RegisterResponseWriter(responseWriter responsewriter.ResponseWriter) {
-	responsewriter.RegisterResponseWriter(responseWriter)
 }
 
 func RegisterRequestConverter(requestConverter requestconverter.RequestConverter) {
@@ -79,30 +79,10 @@ func RegisterHandler(path string, httpMethod []string, handlerMethod interface{}
 	illusionService.RegisterHandler(path, httpMethod, handlerMethod)
 }
 
-func RegisterServiceListener(listen listener.Listener) {
-	listener.RegisterServiceListener(listen)
-}
-
 func RegisterLog(l log.Log) {
 	log.RegisterLog(l)
 }
 
-func StartService(port string) {
-
-	//if err := listener.ExecuteHttpServerStartUpListener(); err != nil {
-	//	panic(err)
-	//}
-
-	if port == "" {
-		port = "8080"
-	}
-
-	if err := http.ListenAndServe(":"+port, illusionService); err != nil {
-		panic(err)
-	}
-	//
-	//if err := listener.ExecuteHttpServerShutdownListener(); err != nil {
-	//	panic(err)
-	//}
-
+func StartService() {
+	illusionService.Start("8082")
 }

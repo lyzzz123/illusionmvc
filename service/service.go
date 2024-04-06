@@ -27,6 +27,8 @@ type IllusionService struct {
 	filterArray []filter.Filter
 
 	handlerContainer *handler.Container
+
+	DefaultStaticHandler handler.StaticHandler
 }
 
 func (illusionService *IllusionService) RegisterResponseWriter(responseWriter responsewriter.ResponseWriter) {
@@ -101,6 +103,10 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 
 }
 
+func (illusionService *IllusionService) RegisterStaticHandler(staticHandler handler.StaticHandler) {
+	illusionService.DefaultStaticHandler = staticHandler
+}
+
 func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 	defer func() {
@@ -110,29 +116,37 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 		}
 	}()
 
-	wrapper := illusionService.handlerContainer.GetWrapper(request.Method, request.URL.Path)
-
-	for _, f := range wrapper.FilterArray {
-		if err := f.PreHandle(writer, request); err != nil {
-			log.Error("execute filter preHandle error:%s", err.Error())
+	if illusionService.DefaultStaticHandler.Match(request) {
+		illusionService.DefaultStaticHandler.HandleStatic(writer, request)
+	} else {
+		wrapper := illusionService.handlerContainer.GetWrapper(request.Method, request.URL.Path)
+		for _, f := range wrapper.FilterArray {
+			if err := f.PreHandle(writer, request); err != nil {
+				log.Error("execute filter preHandle error:%s", err.Error())
+				writer.WriteHeader(500)
+			}
+		}
+		if err := wrapper.Handle(writer, request); err != nil {
+			log.Error("execute handler error:%s", err.Error())
 			writer.WriteHeader(500)
+			return
+		}
+
+		for _, f := range wrapper.FilterArray {
+			if err := f.PostHandle(writer); err != nil {
+				log.Error("execute filter postHandle error:%s", err.Error())
+				writer.WriteHeader(500)
+			}
 		}
 	}
 
-	if err := wrapper.Handle(writer, request); err != nil {
-		log.Error("execute handler error:%s", err.Error())
-		writer.WriteHeader(500)
-		return
-	}
-
-	for _, f := range wrapper.FilterArray {
-		if err := f.PostHandle(writer); err != nil {
-			log.Error("execute filter postHandle error:%s", err.Error())
-			writer.WriteHeader(500)
-		}
-	}
 }
 
 func (illusionService *IllusionService) Start(port string) {
-
+	if port == "" {
+		port = "8080"
+	}
+	if err := http.ListenAndServe(":"+port, illusionService); err != nil {
+		panic(err)
+	}
 }

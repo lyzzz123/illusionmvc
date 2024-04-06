@@ -19,8 +19,8 @@ func TestToRegex(t *testing.T) {
 
 	//illusionmvc.RegisterHandler("/getTest", []string{httpmethod.GET}, new(TestHandler2).GetTest2)
 	//illusionmvc.RegisterHandler("/protobuf", []string{httpmethod.POST}, new(TestHandler).Protobuf)
-	illusionmvc.RegisterServiceListener(&TestListener{})
-	illusionmvc.StartService("")
+
+	illusionmvc.StartService()
 }
 
 func TestSplit(t *testing.T) {

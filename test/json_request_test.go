@@ -22,5 +22,11 @@ func Hello(param *JSONParam) (*response.JSONResponse, error) {
 func TestJsonRequest(t *testing.T) {
 
 	illusionmvc.RegisterHandler("/testJson", []string{httpmethod.POST}, Hello)
-	illusionmvc.StartService("")
+	illusionmvc.StartService()
+	//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("D:\\temp"))))
+	//
+	//if err := http.ListenAndServe(":8081", nil); err != nil{
+	//	fmt.Println(err)
+	//}
+
 }
