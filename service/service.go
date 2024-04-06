@@ -16,7 +16,9 @@ import (
 type IllusionService struct {
 	TypeConverterMap map[reflect.Type]typeconverter.Converter
 
-	DefaultExceptionHandler exceptionhandler.ExceptionHandler
+	DefaultSystemExceptionHandler exceptionhandler.ExceptionHandler
+
+	DefaultBusinessExceptionHandler exceptionhandler.ExceptionHandler
 
 	RequestConverterArray []requestconverter.RequestConverter
 
@@ -38,8 +40,12 @@ func (illusionService *IllusionService) RegisterRequestConverter(requestConverte
 	illusionService.RequestConverterArray = append(illusionService.RequestConverterArray, requestConverter)
 }
 
-func (illusionService *IllusionService) RegisterExceptionHandler(exceptionHandler exceptionhandler.ExceptionHandler) {
-	illusionService.DefaultExceptionHandler = exceptionHandler
+func (illusionService *IllusionService) RegisterSystemExceptionHandler(exceptionHandler exceptionhandler.ExceptionHandler) {
+	illusionService.DefaultSystemExceptionHandler = exceptionHandler
+}
+
+func (illusionService *IllusionService) RegisterBusinessExceptionHandler(exceptionHandler exceptionhandler.ExceptionHandler) {
+	illusionService.DefaultBusinessExceptionHandler = exceptionHandler
 }
 
 func (illusionService *IllusionService) RegisterTypeConverter(converter typeconverter.Converter) {
@@ -87,8 +93,8 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 		pathPatternRegex.MatchString(path)
 		wrapper.FilterArray = append(wrapper.FilterArray, f)
 	}
-	wrapper.TypeConverterMap = illusionService.TypeConverterMap
-	wrapper.DefaultExceptionHandler = illusionService.DefaultExceptionHandler
+	wrapper.Input.TypeConverterMap = illusionService.TypeConverterMap
+	wrapper.DefaultExceptionHandler = illusionService.DefaultBusinessExceptionHandler
 	wrapper.RequestConverterArray = illusionService.RequestConverterArray
 	wrapper.ResponseWriterMap = illusionService.ResponseWriterMap
 	illusionService.handlerContainer.RegisterWrapper(wrapper)
@@ -96,6 +102,13 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 }
 
 func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+
+	defer func() {
+		if msg := recover(); msg != nil {
+			log.Error("%v", msg)
+			illusionService.DefaultSystemExceptionHandler.Handle(writer, nil)
+		}
+	}()
 
 	wrapper := illusionService.handlerContainer.GetWrapper(request.Method, request.URL.Path)
 

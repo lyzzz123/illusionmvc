@@ -15,9 +15,10 @@ func (applicationJSONConverter *ApplicationJSONConverter) Convert(writer http.Re
 	if bodyBytes, err := ioutil.ReadAll(request.Body); err != nil {
 		return err
 	} else {
-		json.Unmarshal(bodyBytes, param)
+		if err := json.Unmarshal(bodyBytes, param); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 

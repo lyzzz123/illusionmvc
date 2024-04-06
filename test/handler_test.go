@@ -2,12 +2,15 @@ package test
 
 import (
 	"fmt"
+	"github.com/lyzzz123/illusionmvc"
+	"github.com/lyzzz123/illusionmvc/constant/httpmethod"
 	"github.com/lyzzz123/illusionmvc/log"
 	response2 "github.com/lyzzz123/illusionmvc/response"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"testing"
 )
 
 type TestHandler struct {
@@ -44,18 +47,27 @@ type TestGetParam struct {
 	T2 int    `paramValue:"t2"`
 }
 
+type TestHandlerParam struct {
+	HelloWorld string `paramValue:"helloWorld"`
+
+	Asddf *multipart.FileHeader `paramValue:"asdddf"`
+
+	ResponseWriter http.ResponseWriter
+	Request        *http.Request
+}
+
 func (testHandler *TestHandler) Upload(testHandlerParam *TestHandlerParam) (*response2.JSONResponse, error) {
 
+	i := 0
+	j := 3 / i
+	fmt.Println(j)
 	file, _ := testHandlerParam.Asddf.Open()
 
 	newFile, _ := os.Create("D:\\temp\\" + testHandlerParam.Asddf.Filename)
 	io.Copy(newFile, file)
 	newFile.Close()
 	file.Close()
-	osfile := file.(*os.File)
-	os.Remove(osfile.Name())
-	return &response2.JSONResponse{"{\"hello\":\"upload success !!!!\"}"}, nil
-
+	return &response2.JSONResponse{Data: "{\"hello\":\"upload success !!!!\"}"}, nil
 }
 
 func (testHandler *TestHandler) Download(testHandlerParam *TestHandlerParam) (*response2.FileResponse, error) {
@@ -82,20 +94,15 @@ type PostJSONParam struct {
 	T3 string `json:"t3"`
 }
 
-type TestHandlerParam struct {
-	HelloWorld string `json:"helloWorld"`
-
-	Asddf *multipart.FileHeader `json:"asdddf"`
-
-	EE int `json:"ee,string"`
-
-	ResponseWriter http.ResponseWriter `json:"responseWriter"`
-	Request        *http.Request       `json:"request"`
-}
-
 func (testHandler *TestHandler) Protobuf(student *Student) (*response2.ProtobufResponse, error) {
 	fmt.Println(student)
 
 	student.Age = student.Age + 10
 	return &response2.ProtobufResponse{Data: student}, nil
+}
+
+func TestToRegexd(t *testing.T) {
+	ttt := &TestHandler{}
+	illusionmvc.RegisterHandler("/getTest", []string{httpmethod.POST}, ttt.Upload)
+	illusionmvc.StartService("")
 }

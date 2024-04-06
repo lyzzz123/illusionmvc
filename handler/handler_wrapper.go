@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
 	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
-	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
@@ -25,7 +24,6 @@ type Wrapper struct {
 	OutputType     reflect.Type
 	Input          *wrapper.InputWrapper
 
-	TypeConverterMap        map[reflect.Type]typeconverter.Converter
 	DefaultExceptionHandler exceptionhandler.ExceptionHandler
 	RequestConverterArray   []requestconverter.RequestConverter
 	ResponseWriterMap       map[reflect.Type]responsewriter.ResponseWriter
@@ -35,27 +33,7 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 
 	inputParam := reflect.New(wrapper.Input.InputType).Interface()
 
-	for _, requestConverter := range wrapper.RequestConverterArray {
-		if requestConverter.Support(request) {
-			if err := requestConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
-				return err
-			}
-		}
-	}
-
-	if wrapper.HasPathValue {
-		if err := wrapper.setPathValue(request, inputParam); err != nil {
-			return err
-		}
-	}
-
-	if err := wrapper.setPathValue(request, inputParam); err != nil {
-		return err
-	}
-	if err := wrapper.setHeaderValue(request, inputParam); err != nil {
-		return err
-	}
-	if err := wrapper.setCookieValue(request, inputParam); err != nil {
+	if err := wrapper.setInputParam(writer, request, inputParam); err != nil {
 		return err
 	}
 
@@ -80,6 +58,48 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 	return nil
 }
 
+func (wrapper *Wrapper) setInputParam(writer http.ResponseWriter, request *http.Request, inputParam interface{}) error {
+
+	for _, requestConverter := range wrapper.RequestConverterArray {
+		if requestConverter.Support(request) {
+			if err := requestConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
+				return err
+			}
+		}
+	}
+
+	if wrapper.HasPathValue {
+		if err := wrapper.setPathValue(request, inputParam); err != nil {
+			return err
+		}
+	}
+
+	if err := wrapper.setPathValue(request, inputParam); err != nil {
+		return err
+	}
+	if err := wrapper.setHeaderValue(request, inputParam); err != nil {
+		return err
+	}
+	if err := wrapper.setCookieValue(request, inputParam); err != nil {
+		return err
+	}
+	if err := wrapper.setRequestAndResponse(writer, request, inputParam); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (wrapper *Wrapper) setRequestAndResponse(writer http.ResponseWriter, request *http.Request, param interface{}) error {
+	reflectParamValue := reflect.ValueOf(param).Elem()
+	if wrapper.Input.HasRequestParam {
+		reflectParamValue.Field(wrapper.Input.ResponseParamIndex).Set(reflect.ValueOf(request))
+	}
+	if wrapper.Input.HasResponseParam {
+		reflectParamValue.Field(wrapper.Input.ResponseParamIndex).Set(reflect.ValueOf(writer))
+	}
+	return nil
+}
+
 func (wrapper *Wrapper) setCookieValue(request *http.Request, param interface{}) error {
 	reflectParamValue := reflect.ValueOf(param).Elem()
 	cookies := request.Cookies()
@@ -87,7 +107,7 @@ func (wrapper *Wrapper) setCookieValue(request *http.Request, param interface{})
 		paramIndex, ok := wrapper.Input.ParamValuePositionMap[cookie.Name]
 		if ok {
 			field := reflectParamValue.Field(paramIndex)
-			if converter, ok := wrapper.TypeConverterMap[field.Type()]; ok {
+			if converter, ok := wrapper.Input.TypeConverterMap[field.Type()]; ok {
 				if parsedValue, err := converter.Convert(cookie.Value); err != nil {
 					return err
 				} else {
@@ -105,7 +125,7 @@ func (wrapper *Wrapper) setHeaderValue(request *http.Request, param interface{})
 		paramIndex, ok := wrapper.Input.ParamValuePositionMap[headerName]
 		if ok {
 			field := reflectParamValue.Field(paramIndex)
-			if converter, ok := wrapper.TypeConverterMap[field.Type()]; ok {
+			if converter, ok := wrapper.Input.TypeConverterMap[field.Type()]; ok {
 				if parsedValue, err := converter.Convert(headerValue[0]); err != nil {
 					return err
 				} else {
@@ -125,7 +145,7 @@ func (wrapper *Wrapper) setPathValue(request *http.Request, param interface{}) e
 	for i := 1; i < len(pathValueArray); i++ {
 		if index, ok := wrapper.Input.PathValuePositionMap[i]; ok {
 			field := reflectParamValue.Field(index)
-			if converter, ok := wrapper.TypeConverterMap[field.Type()]; ok {
+			if converter, ok := wrapper.Input.TypeConverterMap[field.Type()]; ok {
 				if parsedValue, err := converter.Convert(pathValueArray[i]); err != nil {
 					return err
 				} else {
@@ -177,6 +197,7 @@ func CreateHandlerWrapper(path string, httpMethod []string, handlerMethod interf
 		hw.HasPathValue = true
 	}
 	hw.HttpMethod = httpMethod
+	checkRequestAndResponse(hw.Input)
 	return hw
 }
 
@@ -202,6 +223,21 @@ func createInputValueNameIndexMap(inputType reflect.Type) map[string]int {
 		}
 	}
 	return paramMap
+}
+
+func checkRequestAndResponse(inputWrapper *wrapper.InputWrapper) {
+
+	for i := 0; i < inputWrapper.InputType.NumField(); i++ {
+		fieldValue := inputWrapper.InputType.Field(i)
+		if fieldValue.Type.String() == "http.ResponseWriter" {
+			inputWrapper.HasRequestParam = true
+			inputWrapper.RequestParamIndex = i
+		}
+		if fieldValue.Type.String() == "*http.Request" {
+			inputWrapper.HasResponseParam = true
+			inputWrapper.ResponseParamIndex = i
+		}
+	}
 }
 
 func createPathValueNameIndexMap(path string) map[string]int {

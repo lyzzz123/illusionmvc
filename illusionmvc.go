@@ -45,7 +45,6 @@ func init() {
 	illusionService.RegisterTypeConverter(&typeconverter.UintConverter{})
 	illusionService.RegisterTypeConverter(&typeconverter.UintPtrConverter{})
 
-	illusionService.RegisterRequestConverter(&requestconverter.GetMethodConverter{})
 	illusionService.RegisterRequestConverter(&requestconverter.ApplicationJSONConverter{})
 	illusionService.RegisterRequestConverter(&requestconverter.ApplicationXWWWFormUrlencodedConverter{})
 	illusionService.RegisterRequestConverter(&requestconverter.MultipartFormDataConverter{})
@@ -55,7 +54,8 @@ func init() {
 	illusionService.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
 	illusionService.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
 
-	illusionService.RegisterExceptionHandler(&exceptionhandler.DefaultExceptionHandler{})
+	illusionService.RegisterBusinessExceptionHandler(&exceptionhandler.DefaultBusinessExceptionHandler{})
+	illusionService.RegisterSystemExceptionHandler(&exceptionhandler.DefaultSystemExceptionHandler{})
 
 }
 
@@ -85,10 +85,6 @@ func RegisterServiceListener(listen listener.Listener) {
 
 func RegisterLog(l log.Log) {
 	log.RegisterLog(l)
-}
-
-func RegisterExceptionHandler(exceptionHandler exceptionhandler.ExceptionHandler) {
-	exceptionhandler.RegisterExceptionHandler(exceptionHandler)
 }
 
 func StartService(port string) {
