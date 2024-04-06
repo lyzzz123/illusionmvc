@@ -53,11 +53,6 @@ func init() {
 	illusionService.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
 	illusionService.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
 
-	illusionService.RegisterStaticHandler(&handler.DefaultStaticHandler{
-		StaticPaths: "/static",
-		StaticDir:   "D:\\temp",
-	})
-
 	illusionService.RegisterBusinessExceptionHandler(&exceptionhandler.DefaultBusinessExceptionHandler{})
 	illusionService.RegisterSystemExceptionHandler(&exceptionhandler.DefaultSystemExceptionHandler{})
 
@@ -79,10 +74,14 @@ func RegisterHandler(path string, httpMethod []string, handlerMethod interface{}
 	illusionService.RegisterHandler(path, httpMethod, handlerMethod)
 }
 
+func RegisterStaticHandler(staticHandler handler.StaticHandler) {
+	illusionService.RegisterStaticHandler(staticHandler)
+}
+
 func RegisterLog(l log.Log) {
 	log.RegisterLog(l)
 }
 
-func StartService() {
-	illusionService.Start("8082")
+func StartService(port string) {
+	illusionService.Start(port)
 }

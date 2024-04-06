@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/lyzzz123/illusionmvc"
 	"github.com/lyzzz123/illusionmvc/constant/httpmethod"
+	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/response"
 	"testing"
 )
@@ -21,12 +22,11 @@ func Hello(param *JSONParam) (*response.JSONResponse, error) {
 
 func TestJsonRequest(t *testing.T) {
 
+	illusionmvc.RegisterStaticHandler(&handler.DefaultStaticHandler{
+		StaticPaths: "/static",
+		StaticDir:   "D:\\temp",
+	})
 	illusionmvc.RegisterHandler("/testJson", []string{httpmethod.POST}, Hello)
-	illusionmvc.StartService()
-	//http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("D:\\temp"))))
-	//
-	//if err := http.ListenAndServe(":8081", nil); err != nil{
-	//	fmt.Println(err)
-	//}
+	illusionmvc.StartService("8082")
 
 }

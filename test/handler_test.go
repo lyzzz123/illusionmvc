@@ -104,5 +104,5 @@ func (testHandler *TestHandler) Protobuf(student *Student) (*response2.ProtobufR
 func TestToRegexd(t *testing.T) {
 	ttt := &TestHandler{}
 	illusionmvc.RegisterHandler("/getTest", []string{httpmethod.POST}, ttt.Upload)
-	illusionmvc.StartService()
+	illusionmvc.StartService("8082")
 }
