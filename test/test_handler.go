@@ -2,8 +2,8 @@ package test
 
 import (
 	"fmt"
-	"github.com/lyzzz123/illusionmvc/handler/response"
 	"github.com/lyzzz123/illusionmvc/log"
+	response2 "github.com/lyzzz123/illusionmvc/response"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -13,26 +13,26 @@ import (
 type TestHandler struct {
 }
 
-func (testHandler *TestHandler) GetTest(testGetParam *TestGetParam) (*response.JSONResponse, error) {
+func (testHandler *TestHandler) GetTest(testGetParam *TestGetParam) (*response2.JSONResponse, error) {
 	log.Info("%v", testGetParam)
-	return &response.JSONResponse{"{\"hello\":\"world\"}"}, nil
+	return &response2.JSONResponse{"{\"hello\":\"world\"}"}, nil
 }
 
 type TestHandler1 struct {
 }
 
-func (testHandler1 *TestHandler1) GetTest1(testGetParam *TestGetParam) (*response.JSONResponse, error) {
+func (testHandler1 *TestHandler1) GetTest1(testGetParam *TestGetParam) (*response2.JSONResponse, error) {
 	log.Info("%v", testGetParam)
-	return &response.JSONResponse{"{\"hello\":\"world\"}"}, nil
+	return &response2.JSONResponse{"{\"hello\":\"world\"}"}, nil
 }
 
 type TestHandler2 struct {
 }
 
-func (testHandler2 *TestHandler2) GetTest2(testGetParam *TestGetParam) (*response.JSONResponse, error) {
+func (testHandler2 *TestHandler2) GetTest2(testGetParam *TestGetParam) (*response2.JSONResponse, error) {
 	log.Info("%v", testGetParam)
 	//s := "{\"hello\":\"world\"}"
-	return &response.JSONResponse{&W{"world"}}, nil
+	return &response2.JSONResponse{&W{"world"}}, nil
 }
 
 type W struct {
@@ -40,11 +40,11 @@ type W struct {
 }
 
 type TestGetParam struct {
-	T1 string `pathValue:"t1"`
-	T2 int    `pathValue:"t2"`
+	T1 string `paramValue:"t1"`
+	T2 int    `paramValue:"t2"`
 }
 
-func (testHandler *TestHandler) Upload(testHandlerParam *TestHandlerParam) (*response.JSONResponse, error) {
+func (testHandler *TestHandler) Upload(testHandlerParam *TestHandlerParam) (*response2.JSONResponse, error) {
 
 	file, _ := testHandlerParam.Asddf.Open()
 
@@ -54,13 +54,13 @@ func (testHandler *TestHandler) Upload(testHandlerParam *TestHandlerParam) (*res
 	file.Close()
 	osfile := file.(*os.File)
 	os.Remove(osfile.Name())
-	return &response.JSONResponse{"{\"hello\":\"upload success !!!!\"}"}, nil
+	return &response2.JSONResponse{"{\"hello\":\"upload success !!!!\"}"}, nil
 
 }
 
-func (testHandler *TestHandler) Download(testHandlerParam *TestHandlerParam) (*response.FileResponse, error) {
+func (testHandler *TestHandler) Download(testHandlerParam *TestHandlerParam) (*response2.FileResponse, error) {
 
-	fr := &response.FileResponse{}
+	fr := &response2.FileResponse{}
 	fileInfo, _ := os.Stat("D:\\ebook\\Kubernetes权威指南：从Docker到Kubernetes实践全接触（第4版）.pdf")
 	file, _ := os.Open("D:\\ebook\\Kubernetes权威指南：从Docker到Kubernetes实践全接触（第4版）.pdf")
 	fr.Name = fileInfo.Name()
@@ -70,9 +70,9 @@ func (testHandler *TestHandler) Download(testHandlerParam *TestHandlerParam) (*r
 	return fr, nil
 }
 
-func (testHandler *TestHandler) PostJSON(postJSONParam *PostJSONParam) (*response.JSONResponse, error) {
+func (testHandler *TestHandler) PostJSON(postJSONParam *PostJSONParam) (*response2.JSONResponse, error) {
 
-	return &response.JSONResponse{"{\"hello\":\"" + postJSONParam.T2 + "\"}"}, nil
+	return &response2.JSONResponse{"{\"hello\":\"" + postJSONParam.T2 + "\"}"}, nil
 
 }
 
@@ -93,9 +93,9 @@ type TestHandlerParam struct {
 	Request        *http.Request       `json:"request"`
 }
 
-func (testHandler *TestHandler) Protobuf(student *Student) (*response.ProtobufResponse, error) {
+func (testHandler *TestHandler) Protobuf(student *Student) (*response2.ProtobufResponse, error) {
 	fmt.Println(student)
 
 	student.Age = student.Age + 10
-	return &response.ProtobufResponse{Data: student}, nil
+	return &response2.ProtobufResponse{Data: student}, nil
 }

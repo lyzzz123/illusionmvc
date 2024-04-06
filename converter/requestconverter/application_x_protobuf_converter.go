@@ -2,7 +2,7 @@ package requestconverter
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/lyzzz123/illusionmvc/handler/handlerwrapper"
+	"github.com/lyzzz123/illusionmvc/wrapper"
 	"io/ioutil"
 	"net/http"
 )
@@ -10,7 +10,7 @@ import (
 type ApplicationProtobufConverter struct {
 }
 
-func (applicationProtobufConverter *ApplicationProtobufConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, hw *handlerwrapper.HandlerWrapper) error {
+func (applicationProtobufConverter *ApplicationProtobufConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, inputWrapper *wrapper.InputWrapper) error {
 
 	if bodyBytes, err := ioutil.ReadAll(request.Body); err != nil {
 		return err

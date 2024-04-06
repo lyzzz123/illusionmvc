@@ -10,14 +10,14 @@ var ResponseWriterMap = make(map[reflect.Type]ResponseWriter)
 type ResponseWriter interface {
 	Write(writer http.ResponseWriter, returnValue interface{}) error
 
-	GetSupportResponseType() reflect.Type
+	Support() reflect.Type
 }
 
 func RegisterResponseWriter(responseWriter ResponseWriter) {
-	if responseWriter.GetSupportResponseType() == nil {
+	if responseWriter.Support() == nil {
 		panic("ResponseWriter SupportResponseType must not be nil")
 	}
-	ResponseWriterMap[responseWriter.GetSupportResponseType()] = responseWriter
+	ResponseWriterMap[responseWriter.Support()] = responseWriter
 
 }
 

@@ -1,18 +1,15 @@
 package requestconverter
 
 import (
-	"github.com/lyzzz123/illusionmvc/handler/handlerwrapper"
+	"github.com/lyzzz123/illusionmvc/wrapper"
 	"net/http"
 )
 
 type GetMethodConverter struct {
 }
 
-func (getMethodConverter *GetMethodConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, hw *handlerwrapper.HandlerWrapper) error {
+func (getMethodConverter *GetMethodConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, inputWrapper *wrapper.InputWrapper) error {
 	request.ParseForm()
-	FillInParamValue(request.Form, param, hw)
-	FillInPathValue(request, param, hw)
-
 	return nil
 }
 

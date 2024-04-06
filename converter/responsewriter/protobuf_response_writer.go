@@ -2,12 +2,12 @@ package responsewriter
 
 import (
 	"github.com/golang/protobuf/proto"
-	"github.com/lyzzz123/illusionmvc/handler/response"
+	response2 "github.com/lyzzz123/illusionmvc/response"
 	"net/http"
 	"reflect"
 )
 
-var protobufResponseType = reflect.TypeOf(new(response.ProtobufResponse))
+var protobufResponseType = reflect.TypeOf(new(response2.ProtobufResponse))
 
 type ProtobufResponseWriter struct {
 }
@@ -19,7 +19,7 @@ func (jsonResponseWriter *ProtobufResponseWriter) Write(writer http.ResponseWrit
 		return nil
 	}
 
-	protobufResponse := returnValue.(*response.ProtobufResponse)
+	protobufResponse := returnValue.(*response2.ProtobufResponse)
 
 	if protoBytes, err := proto.Marshal(protobufResponse.Data); err != nil {
 		return err
@@ -31,6 +31,6 @@ func (jsonResponseWriter *ProtobufResponseWriter) Write(writer http.ResponseWrit
 	return nil
 }
 
-func (jsonResponseWriter *ProtobufResponseWriter) GetSupportResponseType() reflect.Type {
+func (jsonResponseWriter *ProtobufResponseWriter) Support() reflect.Type {
 	return protobufResponseType
 }

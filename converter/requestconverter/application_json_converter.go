@@ -2,7 +2,7 @@ package requestconverter
 
 import (
 	"encoding/json"
-	"github.com/lyzzz123/illusionmvc/handler/handlerwrapper"
+	"github.com/lyzzz123/illusionmvc/wrapper"
 	"io/ioutil"
 	"net/http"
 )
@@ -10,14 +10,14 @@ import (
 type ApplicationJSONConverter struct {
 }
 
-func (applicationJSONConverter *ApplicationJSONConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, hw *handlerwrapper.HandlerWrapper) error {
+func (applicationJSONConverter *ApplicationJSONConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, inputWrapper *wrapper.InputWrapper) error {
 
 	if bodyBytes, err := ioutil.ReadAll(request.Body); err != nil {
 		return err
 	} else {
 		json.Unmarshal(bodyBytes, param)
 	}
-	FillInPathValue(request, param, hw)
+
 	return nil
 }
 

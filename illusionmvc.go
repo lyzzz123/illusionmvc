@@ -1,71 +1,61 @@
 package illusionmvc
 
 import (
-	"github.com/lyzzz123/illusionmvc/config"
 	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
 	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
-	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/listener"
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/service"
 	"net/http"
-	"reflect"
 )
 
+var illusionService = &service.IllusionService{}
+
 func init() {
-
 	log.RegisterLog(&log.LogrusLog{})
+	illusionService.RegisterTypeConverter(&typeconverter.BoolConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.BoolPtrConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Float32Convert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Float32PtrConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Float64Convert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Float64PtrConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int8Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int8PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int16Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int16PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int32Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int32PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int64Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Int64PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.IntConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.IntPtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.StringConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.StringPtrConvert{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint8Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint8PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint16Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint16PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint32Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint32PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint64Converter{})
+	illusionService.RegisterTypeConverter(&typeconverter.Uint64PtrConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.UintConverter{})
+	illusionService.RegisterTypeConverter(&typeconverter.UintPtrConverter{})
 
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(int)), typeconverter.IntConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(int8)), typeconverter.Int8Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(int16)), typeconverter.Int16Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(int32)), typeconverter.Int32Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(int64)), typeconverter.Int64Convert)
+	illusionService.RegisterRequestConverter(&requestconverter.GetMethodConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter.ApplicationJSONConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter.ApplicationXWWWFormUrlencodedConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter.MultipartFormDataConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter.ApplicationProtobufConverter{})
 
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(uint)), typeconverter.UintConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(uint8)), typeconverter.UintConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(uint16)), typeconverter.Uint16Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(uint32)), typeconverter.Uint32Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(uint64)), typeconverter.Uint64Convert)
+	illusionService.RegisterResponseWriter(&responsewriter.FileResponseWriter{})
+	illusionService.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
+	illusionService.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
 
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(bool)), typeconverter.BoolConvert)
-
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(float64)), typeconverter.Float64Convert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(float32)), typeconverter.Float32Convert)
-
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(*new(string)), typeconverter.StringConvert)
-
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(int)), typeconverter.IntPtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(int8)), typeconverter.Int8PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(int16)), typeconverter.Int16PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(int32)), typeconverter.Int32PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(int64)), typeconverter.Int64PtrConvert)
-
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(uint)), typeconverter.UintPtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(uint8)), typeconverter.Uint8PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(uint16)), typeconverter.Uint16PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(uint32)), typeconverter.Uint32PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(uint64)), typeconverter.Uint64PtrConvert)
-
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(bool)), typeconverter.BoolPtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(float64)), typeconverter.Float64PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(float32)), typeconverter.Float64PtrConvert)
-	typeconverter.RegisterTypeConverter(reflect.TypeOf(new(string)), typeconverter.StringPtrConvert)
-
-	requestconverter.RegisterRequestConverter(&requestconverter.ApplicationJSONConverter{})
-	requestconverter.RegisterRequestConverter(&requestconverter.ApplicationXWWWFormUrlencodedConverter{})
-	requestconverter.RegisterRequestConverter(&requestconverter.MultipartFormDataConverter{})
-	requestconverter.RegisterRequestConverter(&requestconverter.GetMethodConverter{})
-	requestconverter.RegisterRequestConverter(&requestconverter.ApplicationProtobufConverter{})
-
-	responsewriter.RegisterResponseWriter(&responsewriter.FileResponseWriter{})
-	responsewriter.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
-	responsewriter.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
-
-	exceptionhandler.RegisterExceptionHandler(&exceptionhandler.DefaultExceptionHandler{})
+	illusionService.RegisterExceptionHandler(&exceptionhandler.DefaultExceptionHandler{})
 
 }
 
@@ -74,18 +64,19 @@ func RegisterResponseWriter(responseWriter responsewriter.ResponseWriter) {
 }
 
 func RegisterRequestConverter(requestConverter requestconverter.RequestConverter) {
-	requestconverter.RegisterRequestConverter(requestConverter)
+	illusionService.RegisterRequestConverter(requestConverter)
 }
-func RegisterTypeConverter(typ reflect.Type, converterFunc func(string) (interface{}, error)) {
-	typeconverter.RegisterTypeConverter(typ, converterFunc)
+
+func RegisterTypeConverter(converter typeconverter.Converter) {
+	illusionService.RegisterTypeConverter(converter)
 }
 
 func RegisterFilter(serviceFilter filter.Filter) {
-	filter.RegisterFilter(serviceFilter)
+	illusionService.RegisterFilter(serviceFilter)
 }
 
 func RegisterHandler(path string, httpMethod []string, handlerMethod interface{}) {
-	handler.RegisterHandler(path, httpMethod, handlerMethod)
+	illusionService.RegisterHandler(path, httpMethod, handlerMethod)
 }
 
 func RegisterServiceListener(listen listener.Listener) {
@@ -100,20 +91,22 @@ func RegisterExceptionHandler(exceptionHandler exceptionhandler.ExceptionHandler
 	exceptionhandler.RegisterExceptionHandler(exceptionHandler)
 }
 
-func StartService() {
+func StartService(port string) {
 
-	if err := listener.ExecuteHttpServerStartUpListener(); err != nil {
-		panic(err)
+	//if err := listener.ExecuteHttpServerStartUpListener(); err != nil {
+	//	panic(err)
+	//}
+
+	if port == "" {
+		port = "8080"
 	}
 
-	port := config.GetConfig("port", "8080")
-
-	if err := http.ListenAndServe(":"+port.(string), &service.IllusionService{}); err != nil {
+	if err := http.ListenAndServe(":"+port, illusionService); err != nil {
 		panic(err)
 	}
-
-	if err := listener.ExecuteHttpServerShutdownListener(); err != nil {
-		panic(err)
-	}
+	//
+	//if err := listener.ExecuteHttpServerShutdownListener(); err != nil {
+	//	panic(err)
+	//}
 
 }

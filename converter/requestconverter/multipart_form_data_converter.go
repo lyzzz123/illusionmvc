@@ -2,7 +2,7 @@ package requestconverter
 
 import (
 	"encoding/json"
-	"github.com/lyzzz123/illusionmvc/handler/handlerwrapper"
+	"github.com/lyzzz123/illusionmvc/wrapper"
 	"net/http"
 	"reflect"
 	"strings"
@@ -11,7 +11,7 @@ import (
 type MultipartFormDataConverter struct {
 }
 
-func (multipartFormDataConverter *MultipartFormDataConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, hw *handlerwrapper.HandlerWrapper) error {
+func (multipartFormDataConverter *MultipartFormDataConverter) Convert(writer http.ResponseWriter, request *http.Request, param interface{}, inputWrapper *wrapper.InputWrapper) error {
 
 	if err := request.ParseMultipartForm(1 << 20); err != nil {
 		return err
