@@ -9,8 +9,9 @@ import (
 )
 
 type JSONParam struct {
-	Hello string `json:"hello"`
-	Name  string `json:"name"`
+	Hello       string `json:"hello"`
+	Name        string `json:"name"`
+	ContentType string `paramValue:"Content-Type"`
 }
 
 func Hello(param *JSONParam) (*response.JSONResponse, error) {
