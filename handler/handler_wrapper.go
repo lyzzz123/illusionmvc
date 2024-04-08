@@ -2,10 +2,10 @@ package handler
 
 import (
 	"errors"
-	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
+	requestconverter2 "github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
 	"github.com/lyzzz123/illusionmvc/utils"
 	"github.com/lyzzz123/illusionmvc/wrapper"
@@ -25,7 +25,7 @@ type Wrapper struct {
 	Input          *wrapper.InputWrapper
 
 	DefaultExceptionHandler exceptionhandler.ExceptionHandler
-	RequestConverterArray   []requestconverter.RequestConverter
+	RequestConverterArray   []requestconverter2.RequestConverter
 	ResponseWriter          response.Writer
 }
 

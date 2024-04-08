@@ -1,12 +1,12 @@
 package illusionmvc
 
 import (
-	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
+	requestconverter2 "github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
 	"github.com/lyzzz123/illusionmvc/service"
 	"reflect"
@@ -45,10 +45,10 @@ func init() {
 	illusionService.RegisterTypeConverter(&typeconverter.UintConverter{})
 	illusionService.RegisterTypeConverter(&typeconverter.UintPtrConverter{})
 
-	illusionService.RegisterRequestConverter(&requestconverter.ApplicationJSONConverter{})
-	illusionService.RegisterRequestConverter(&requestconverter.ApplicationXWWWFormUrlencodedConverter{})
-	illusionService.RegisterRequestConverter(&requestconverter.MultipartFormDataConverter{})
-	illusionService.RegisterRequestConverter(&requestconverter.ApplicationProtobufConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter2.ApplicationJSONConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter2.ApplicationXWWWFormUrlencodedConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter2.MultipartFormDataConverter{})
+	illusionService.RegisterRequestConverter(&requestconverter2.ApplicationProtobufConverter{})
 
 	illusionService.RegisterResponseWriter(&response.FileResponseWriter{ResponseType: reflect.TypeOf(*new(response.FileResponse))})
 	illusionService.RegisterResponseWriter(&response.JSONResponseWriter{ResponseType: reflect.TypeOf(*new(response.JSONResponse))})
@@ -59,7 +59,7 @@ func init() {
 
 }
 
-func RegisterRequestConverter(requestConverter requestconverter.RequestConverter) {
+func RegisterRequestConverter(requestConverter requestconverter2.RequestConverter) {
 	illusionService.RegisterRequestConverter(requestConverter)
 }
 
