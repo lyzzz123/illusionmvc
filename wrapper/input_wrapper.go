@@ -8,7 +8,7 @@ import (
 type InputWrapper struct {
 	PathValuePositionMap  map[int]int
 	ParamValuePositionMap map[string]int
-	InputTypeArray        []reflect.Type
+	InputType             reflect.Type
 	TypeConverterMap      map[reflect.Type]typeconverter.Converter
 
 	HasRequestParam    bool

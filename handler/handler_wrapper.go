@@ -30,15 +30,14 @@ type Wrapper struct {
 }
 
 func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request) error {
-
-	inputParam := reflect.New(wrapper.Input.InputType).Interface()
-
-	if err := wrapper.setInputParam(writer, request, inputParam); err != nil {
-		return err
+	args := make([]reflect.Value, 0)
+	if wrapper.Input.InputType != nil {
+		inputParam := reflect.New(wrapper.Input.InputType).Interface()
+		if err := wrapper.setInputParam(writer, request, inputParam); err != nil {
+			return err
+		}
+		args = append(args, reflect.ValueOf(inputParam))
 	}
-
-	args := make([]reflect.Value, 1)
-	args[0] = reflect.ValueOf(inputParam)
 	result := reflect.ValueOf(wrapper.Handler).Call(args)
 	if result[1].Interface() != nil {
 		if err := wrapper.DefaultExceptionHandler.Handle(writer, result[1].Interface().(error)); err != nil {
