@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -24,8 +25,8 @@ func (staticHandler *DefaultStaticHandler) Match(request *http.Request) bool {
 
 func (staticHandler *DefaultStaticHandler) HandleStatic(writer http.ResponseWriter, request *http.Request) {
 
-	relativePath := strings.Trim(request.URL.Path, staticHandler.StaticPaths)
-	filePath := staticHandler.StaticDir + "/" + relativePath
+	relativePath := strings.TrimPrefix(request.URL.Path, staticHandler.StaticPaths)
+	filePath := path.Join(staticHandler.StaticDir, relativePath)
 	file, err := os.Open(filePath)
 	if err != nil {
 		return

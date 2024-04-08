@@ -5,7 +5,7 @@ import (
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
-	requestconverter2 "github.com/lyzzz123/illusionmvc/request/requestconverter"
+	"github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
 	"github.com/lyzzz123/illusionmvc/utils"
 	"github.com/lyzzz123/illusionmvc/wrapper"
@@ -25,7 +25,7 @@ type Wrapper struct {
 	Input          *wrapper.InputWrapper
 
 	DefaultExceptionHandler exceptionhandler.ExceptionHandler
-	RequestConverterArray   []requestconverter2.RequestConverter
+	RequestConverterMap     map[string]requestconverter.RequestConverter
 	ResponseWriter          response.Writer
 }
 
@@ -47,7 +47,6 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 		return nil
 	}
 	returnValue := result[0].Interface()
-	//Map[reflect.TypeOf(returnValue)]
 	if err := wrapper.ResponseWriter.Write(writer, returnValue); err != nil {
 		log.Error(err.Error())
 		return err
@@ -57,18 +56,17 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 
 func (wrapper *Wrapper) setInputParam(writer http.ResponseWriter, request *http.Request, inputParam interface{}) error {
 
-	findConverter := false
-	for _, requestConverter := range wrapper.RequestConverterArray {
+	findConverter, _ := wrapper.RequestConverterMap["ApplicationXWWWFormUrlencodedConverter"]
+	for _, requestConverter := range wrapper.RequestConverterMap {
 		if requestConverter.Support(request) {
-			findConverter = true
-			if err := requestConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
-				return err
-			}
+			findConverter = requestConverter
 		}
 	}
-	if !findConverter {
-		panic("can't find request converter")
+
+	if err := findConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
+		return err
 	}
+
 	if wrapper.HasPathValue {
 		if err := wrapper.setPathValue(request, inputParam); err != nil {
 			return err

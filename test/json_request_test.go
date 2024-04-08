@@ -3,18 +3,17 @@ package test
 import (
 	"github.com/lyzzz123/illusionmvc"
 	"github.com/lyzzz123/illusionmvc/constant/httpmethod"
-	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/response"
 	"testing"
 )
 
 type JSONParam struct {
-	Hello       string `json:"hello"`
-	Name        string `json:"name"`
-	ContentType string `paramValue:"Content-Type"`
+	Hello string `json:"hello"`
+	Name  string `json:"name"`
 }
 
-func Hello(param *JSONParam) (*response.JSONResponse, error) {
+//Content-Type must be application/json
+func JsonRequestTest(param *JSONParam) (*response.JSONResponse, error) {
 	message := param.Hello + ":" + param.Name
 	return &response.JSONResponse{
 		Data: message,
@@ -23,11 +22,7 @@ func Hello(param *JSONParam) (*response.JSONResponse, error) {
 
 func TestJsonRequest(t *testing.T) {
 
-	illusionmvc.RegisterStaticHandler(&handler.DefaultStaticHandler{
-		StaticPaths: "/static",
-		StaticDir:   "D:\\temp",
-	})
-	illusionmvc.RegisterHandler("/testJson", []string{httpmethod.POST}, Hello)
-	illusionmvc.StartService("8082")
+	illusionmvc.RegisterHandler("/json_request_test", []string{httpmethod.POST}, JsonRequestTest)
+	illusionmvc.StartService("9527")
 
 }
