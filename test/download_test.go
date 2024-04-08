@@ -13,7 +13,7 @@ type DownloadParam struct {
 	Name  string `paramValue:"name"`
 }
 
-func Download(param *DownloadParam) (*response.FileResponse, error) {
+func Download() (*response.FileResponse, error) {
 	fr := &response.FileResponse{}
 	fileInfo, _ := os.Stat("F:\\temp\\test.txt")
 	file, _ := os.Open("F:\\temp\\test.txt")

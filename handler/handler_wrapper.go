@@ -214,7 +214,11 @@ func createPathValuePositionMap(pathValueNameIndexMap map[string]int, inputValue
 }
 
 func createInputValueNameIndexMap(inputType reflect.Type) map[string]int {
+
 	paramMap := make(map[string]int)
+	if inputType == nil {
+		return paramMap
+	}
 	for i := 0; i < inputType.NumField(); i++ {
 		paramValue := inputType.Field(i).Tag.Get("paramValue")
 		if paramValue != "" {
@@ -225,7 +229,9 @@ func createInputValueNameIndexMap(inputType reflect.Type) map[string]int {
 }
 
 func checkRequestAndResponse(inputWrapper *wrapper.InputWrapper) {
-
+	if inputWrapper.InputType == nil {
+		return
+	}
 	for i := 0; i < inputWrapper.InputType.NumField(); i++ {
 		fieldValue := inputWrapper.InputType.Field(i)
 		if fieldValue.Type.String() == "http.ResponseWriter" {
@@ -253,6 +259,9 @@ func createPathValueNameIndexMap(path string) map[string]int {
 
 func getInputType(handler interface{}) (reflect.Type, error) {
 	methodType := reflect.ValueOf(handler).Type()
+	if methodType.NumIn() == 0 {
+		return nil, nil
+	}
 	if methodType.NumIn() != 1 {
 		return nil, errors.New(methodType.String() + " must has one input param")
 	}
