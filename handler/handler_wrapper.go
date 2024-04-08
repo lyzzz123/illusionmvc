@@ -55,13 +55,15 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 
 func (wrapper *Wrapper) setInputParam(writer http.ResponseWriter, request *http.Request, inputParam interface{}) error {
 
-	findConverter, _ := wrapper.RequestConverterMap["ApplicationXWWWFormUrlencodedConverter"]
+	var findConverter requestconverter.RequestConverter = nil
 	for _, requestConverter := range wrapper.RequestConverterMap {
 		if requestConverter.Support(request) {
 			findConverter = requestConverter
 		}
 	}
-
+	if findConverter == nil {
+		panic("not support Content-Type:" + request.Header.Get("Content-Type"))
+	}
 	if err := findConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
 		return err
 	}
