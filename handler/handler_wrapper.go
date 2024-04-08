@@ -245,8 +245,8 @@ func checkRequestAndResponse(inputWrapper *wrapper.InputWrapper) {
 }
 
 func createPathValueNameIndexMap(path string) map[string]int {
-	pathValueRegex := regexp.MustCompile("{[a-zA-Z\\d]+}")
-	replacedPathValuePath := pathValueRegex.ReplaceAllString(path, "{([a-zA-Z\\d]+)}")
+	pathValueRegex := regexp.MustCompile("{[^/]+}")
+	replacedPathValuePath := pathValueRegex.ReplaceAllString(path, "{([^/]+)}")
 	replacedPathValueRegex := regexp.MustCompile("^" + replacedPathValuePath + "$")
 	pathValueNameArray := replacedPathValueRegex.FindStringSubmatch(path)
 	r := make(map[string]int, len(pathValueNameArray)-1)

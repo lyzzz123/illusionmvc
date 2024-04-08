@@ -22,7 +22,7 @@ type FirstFilter struct {
 }
 
 func (firstFilter *FirstFilter) PreHandle(writer http.ResponseWriter, request *http.Request) error {
-	fmt.Println("FirstFilter PreHandle")
+	fmt.Println("FirstFilter PreHandle:" + request.URL.Path)
 	return nil
 }
 
@@ -44,7 +44,7 @@ type SecondFilter struct {
 }
 
 func (secondFilter *SecondFilter) PreHandle(writer http.ResponseWriter, request *http.Request) error {
-	fmt.Println("SecondFilter PreHandle")
+	fmt.Println("SecondFilter PreHandle:" + request.URL.Path)
 	return nil
 }
 
@@ -58,7 +58,7 @@ func (secondFilter *SecondFilter) GetPriority() int {
 }
 
 func (secondFilter *SecondFilter) GetPathPattern() string {
-	return "/**"
+	return "/test_filter/*/test_b"
 }
 
 func TestFilter(t *testing.T) {
@@ -66,6 +66,6 @@ func TestFilter(t *testing.T) {
 	illusionmvc.RegisterFilter(&SecondFilter{})
 	illusionmvc.RegisterFilter(&filter.CorsFilter{})
 
-	illusionmvc.RegisterHandler("/test_filter", []string{httpmethod.GET}, FilterTest)
+	illusionmvc.RegisterHandler("/test_filter/test_a/test_b", []string{httpmethod.GET}, FilterTest)
 	illusionmvc.StartService("9527")
 }

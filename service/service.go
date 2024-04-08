@@ -97,10 +97,12 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 		doubleStarRegex := regexp.MustCompile("/\\*\\*")
 		pathPattern = doubleStarRegex.ReplaceAllString(pathPattern, "/.+")
 		singleStarRegex := regexp.MustCompile("/\\*")
-		pathPattern = singleStarRegex.ReplaceAllString(pathPattern, "/[a-zA-Z\\d]+")
+		pathPattern = "^" + singleStarRegex.ReplaceAllString(pathPattern, "/[^/]+") + "$"
 		pathPatternRegex := regexp.MustCompile(pathPattern)
-		pathPatternRegex.MatchString(path)
-		wrapper.FilterArray = append(wrapper.FilterArray, f)
+		if pathPatternRegex.MatchString(path) {
+			wrapper.FilterArray = append(wrapper.FilterArray, f)
+		}
+
 	}
 	wrapper.Input.TypeConverterMap = illusionService.TypeConverterMap
 	wrapper.DefaultExceptionHandler = illusionService.DefaultBusinessExceptionHandler
