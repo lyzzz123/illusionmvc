@@ -15,7 +15,9 @@ import (
 var illusionService = &service.IllusionService{}
 
 func init() {
-	log.RegisterLog(&log.LogrusLog{})
+	defaultLog := &log.DefaultLog{}
+	defaultLog.Init()
+	illusionService.RegisterLog(defaultLog)
 	illusionService.RegisterTypeConverter(&typeconverter.BoolConvert{})
 	illusionService.RegisterTypeConverter(&typeconverter.BoolPtrConvert{})
 	illusionService.RegisterTypeConverter(&typeconverter.Float32Convert{})
@@ -79,8 +81,8 @@ func RegisterStaticHandler(staticHandler handler.StaticHandler) {
 	illusionService.RegisterStaticHandler(staticHandler)
 }
 
-func RegisterLog(l log.Log) {
-	log.RegisterLog(l)
+func RegisterLog(logInstance log.Log) {
+	illusionService.RegisterLog(logInstance)
 }
 
 func StartService(port string) {

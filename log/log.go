@@ -1,33 +1,28 @@
 package log
 
-var LogInstance Log
+var instance Log
 
 func RegisterLog(l Log) {
-	if err := l.Config(); err != nil {
-		panic(err)
-	}
-	LogInstance = l
+	instance = l
 }
 
 func Debug(format string, args ...interface{}) {
-	LogInstance.Debug(format, args...)
+	instance.Debug(format, args...)
 }
 
 func Info(format string, args ...interface{}) {
-	LogInstance.Info(format, args...)
+	instance.Info(format, args...)
 }
 
 func Warn(format string, args ...interface{}) {
-	LogInstance.Warn(format, args...)
+	instance.Warn(format, args...)
 }
 
 func Error(format string, args ...interface{}) {
-	LogInstance.Error(format, args...)
+	instance.Error(format, args...)
 }
 
 type Log interface {
-	Config() error
-
 	Debug(format string, args ...interface{})
 
 	Info(format string, args ...interface{})

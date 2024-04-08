@@ -119,6 +119,10 @@ func (illusionService *IllusionService) RegisterStaticHandler(staticHandler hand
 	illusionService.DefaultStaticHandler = staticHandler
 }
 
+func (illusionService *IllusionService) RegisterLog(logInstance log.Log) {
+	log.RegisterLog(logInstance)
+}
+
 func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 	defer func() {
@@ -132,26 +136,30 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 		illusionService.DefaultStaticHandler.HandleStatic(writer, request)
 	} else {
 		wrapper := illusionService.handlerContainer.GetWrapper(request.Method, request.URL.Path)
-		for _, f := range wrapper.FilterArray {
-			if err := f.PreHandle(writer, request); err != nil {
-				log.Error("execute filter preHandle error:%s", err.Error())
-				writer.WriteHeader(500)
-			}
-		}
-		if err := wrapper.Handle(writer, request); err != nil {
-			log.Error("execute handler error:%s", err.Error())
-			writer.WriteHeader(500)
+		if wrapper == nil {
+			writer.WriteHeader(http.StatusNotFound)
+			writer.Write([]byte("404 Not Found"))
 			return
 		}
+		for i := 0; i < len(wrapper.FilterArray); i++ {
+			if err := wrapper.FilterArray[i].PreHandle(writer, request); err != nil {
+				log.Error("execute filter preHandle error:%s", err.Error())
+				panic(err)
+			}
+		}
 
-		for _, f := range wrapper.FilterArray {
-			if err := f.PostHandle(writer); err != nil {
-				log.Error("execute filter postHandle error:%s", err.Error())
-				writer.WriteHeader(500)
+		if err := wrapper.Handle(writer, request); err != nil {
+			log.Error("execute handler error:%s", err.Error())
+			panic(err)
+		}
+
+		for i := len(wrapper.FilterArray) - 1; i >= 0; i-- {
+			if err := wrapper.FilterArray[i].PostHandle(writer, request); err != nil {
+				log.Error("execute filter preHandle error:%s", err.Error())
+				panic(err)
 			}
 		}
 	}
-
 }
 
 func (illusionService *IllusionService) Start(port string) {

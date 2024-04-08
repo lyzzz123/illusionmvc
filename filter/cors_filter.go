@@ -12,7 +12,7 @@ func (corsFilter *CorsFilter) PreHandle(writer http.ResponseWriter, request *htt
 	return nil
 }
 
-func (corsFilter *CorsFilter) PostHandle(writer http.ResponseWriter) error {
+func (corsFilter *CorsFilter) PostHandle(writer http.ResponseWriter, request *http.Request) error {
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
 	writer.Header().Set("Access-Control-Allow-Credentials", "true")
 	writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT")
