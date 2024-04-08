@@ -2,13 +2,14 @@ package illusionmvc
 
 import (
 	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
-	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
+	"github.com/lyzzz123/illusionmvc/response"
 	"github.com/lyzzz123/illusionmvc/service"
+	"reflect"
 )
 
 var illusionService = &service.IllusionService{}
@@ -49,9 +50,9 @@ func init() {
 	illusionService.RegisterRequestConverter(&requestconverter.MultipartFormDataConverter{})
 	illusionService.RegisterRequestConverter(&requestconverter.ApplicationProtobufConverter{})
 
-	illusionService.RegisterResponseWriter(&responsewriter.FileResponseWriter{})
-	illusionService.RegisterResponseWriter(&responsewriter.JSONResponseWriter{})
-	illusionService.RegisterResponseWriter(&responsewriter.ProtobufResponseWriter{})
+	illusionService.RegisterResponseWriter(&response.FileResponseWriter{ResponseType: reflect.TypeOf(*new(response.FileResponse))})
+	illusionService.RegisterResponseWriter(&response.JSONResponseWriter{ResponseType: reflect.TypeOf(*new(response.JSONResponse))})
+	illusionService.RegisterResponseWriter(&response.ProtobufResponseWriter{ResponseType: reflect.TypeOf(*new(response.ProtobufResponse))})
 
 	illusionService.RegisterBusinessExceptionHandler(&exceptionhandler.DefaultBusinessExceptionHandler{})
 	illusionService.RegisterSystemExceptionHandler(&exceptionhandler.DefaultSystemExceptionHandler{})

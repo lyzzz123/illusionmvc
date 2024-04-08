@@ -17,7 +17,7 @@ type JSONParam struct {
 func Hello(param *JSONParam) (*response.JSONResponse, error) {
 	message := param.Hello + ":" + param.Name
 	return &response.JSONResponse{
-		Data: &response.Response{Code: 0, Message: "success", Data: message},
+		Data: message,
 	}, nil
 }
 

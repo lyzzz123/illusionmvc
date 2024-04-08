@@ -1,16 +1,19 @@
-package responsewriter
+package response
 
 import (
 	"encoding/json"
-	response2 "github.com/lyzzz123/illusionmvc/response"
 	"io"
 	"net/http"
 	"reflect"
 )
 
-var jsonResponseType = reflect.TypeOf(new(response2.JSONResponse))
+type JSONResponse struct {
+	Data interface{}
+}
 
 type JSONResponseWriter struct {
+	//var jsonResponseType = reflect.TypeOf(new(response2.JSONResponse))
+	ResponseType reflect.Type
 }
 
 func (jsonResponseWriter *JSONResponseWriter) Write(writer http.ResponseWriter, returnValue interface{}) error {
@@ -20,7 +23,7 @@ func (jsonResponseWriter *JSONResponseWriter) Write(writer http.ResponseWriter, 
 		return nil
 	}
 
-	jsonStringResponse := returnValue.(*response2.JSONResponse)
+	jsonStringResponse := returnValue.(*JSONResponse)
 
 	if bytes, err := json.Marshal(jsonStringResponse.Data); err != nil {
 		return err
@@ -32,5 +35,5 @@ func (jsonResponseWriter *JSONResponseWriter) Write(writer http.ResponseWriter, 
 }
 
 func (jsonResponseWriter *JSONResponseWriter) Support() reflect.Type {
-	return jsonResponseType
+	return jsonResponseWriter.ResponseType
 }

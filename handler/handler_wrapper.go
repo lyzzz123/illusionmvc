@@ -3,10 +3,10 @@ package handler
 import (
 	"errors"
 	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
-	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
+	"github.com/lyzzz123/illusionmvc/response"
 	"github.com/lyzzz123/illusionmvc/utils"
 	"github.com/lyzzz123/illusionmvc/wrapper"
 	"net/http"
@@ -26,7 +26,7 @@ type Wrapper struct {
 
 	DefaultExceptionHandler exceptionhandler.ExceptionHandler
 	RequestConverterArray   []requestconverter.RequestConverter
-	ResponseWriterMap       map[reflect.Type]responsewriter.ResponseWriter
+	ResponseWriter          response.Writer
 }
 
 func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request) error {
@@ -47,11 +47,8 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 		return nil
 	}
 	returnValue := result[0].Interface()
-	responseWriter, ok := wrapper.ResponseWriterMap[reflect.TypeOf(returnValue)]
-	if !ok {
-		return errors.New("not found responseWriter")
-	}
-	if err := responseWriter.Write(writer, returnValue); err != nil {
+	//Map[reflect.TypeOf(returnValue)]
+	if err := wrapper.ResponseWriter.Write(writer, returnValue); err != nil {
 		log.Error(err.Error())
 		return err
 	}
@@ -60,14 +57,18 @@ func (wrapper *Wrapper) Handle(writer http.ResponseWriter, request *http.Request
 
 func (wrapper *Wrapper) setInputParam(writer http.ResponseWriter, request *http.Request, inputParam interface{}) error {
 
+	findConverter := false
 	for _, requestConverter := range wrapper.RequestConverterArray {
 		if requestConverter.Support(request) {
+			findConverter = true
 			if err := requestConverter.Convert(writer, request, inputParam, wrapper.Input); err != nil {
 				return err
 			}
 		}
 	}
-
+	if !findConverter {
+		panic("can't find request converter")
+	}
 	if wrapper.HasPathValue {
 		if err := wrapper.setPathValue(request, inputParam); err != nil {
 			return err

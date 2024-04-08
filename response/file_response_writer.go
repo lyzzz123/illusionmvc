@@ -1,21 +1,25 @@
-package responsewriter
+package response
 
 import (
-	response2 "github.com/lyzzz123/illusionmvc/response"
 	"io"
 	"net/http"
 	"reflect"
 	"strconv"
 )
 
-var fileResponseType = reflect.TypeOf(new(response2.FileResponse))
+type FileResponse struct {
+	Name   string
+	Size   int64
+	Reader io.Reader
+}
 
 type FileResponseWriter struct {
+	ResponseType reflect.Type
 }
 
 func (fileResponseWriter *FileResponseWriter) Write(writer http.ResponseWriter, returnValue interface{}) error {
 
-	fileReturnValue := returnValue.(*response2.FileResponse)
+	fileReturnValue := returnValue.(*FileResponse)
 	if fileReturnValue != nil {
 		writer.Header().Set("Content-Disposition", "attachment; filename="+fileReturnValue.Name)
 		writer.Header().Set("Content-Length", strconv.FormatInt(fileReturnValue.Size, 10))
@@ -25,5 +29,5 @@ func (fileResponseWriter *FileResponseWriter) Write(writer http.ResponseWriter, 
 }
 
 func (fileResponseWriter *FileResponseWriter) Support() reflect.Type {
-	return fileResponseType
+	return fileResponseWriter.ResponseType
 }

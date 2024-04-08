@@ -2,15 +2,16 @@ package service
 
 import (
 	"github.com/lyzzz123/illusionmvc/converter/requestconverter"
-	"github.com/lyzzz123/illusionmvc/converter/responsewriter"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
 	"github.com/lyzzz123/illusionmvc/log"
+	"github.com/lyzzz123/illusionmvc/response"
 	"net/http"
 	"reflect"
 	"regexp"
+	"sort"
 )
 
 type IllusionService struct {
@@ -22,7 +23,7 @@ type IllusionService struct {
 
 	RequestConverterArray []requestconverter.RequestConverter
 
-	ResponseWriterMap map[reflect.Type]responsewriter.ResponseWriter
+	ResponseWriterMap map[reflect.Type]response.Writer
 
 	filterArray []filter.Filter
 
@@ -31,9 +32,9 @@ type IllusionService struct {
 	DefaultStaticHandler handler.StaticHandler
 }
 
-func (illusionService *IllusionService) RegisterResponseWriter(responseWriter responsewriter.ResponseWriter) {
+func (illusionService *IllusionService) RegisterResponseWriter(responseWriter response.Writer) {
 	if illusionService.ResponseWriterMap == nil {
-		illusionService.ResponseWriterMap = make(map[reflect.Type]responsewriter.ResponseWriter)
+		illusionService.ResponseWriterMap = make(map[reflect.Type]response.Writer)
 	}
 	illusionService.ResponseWriterMap[responseWriter.Support()] = responseWriter
 }
@@ -59,6 +60,9 @@ func (illusionService *IllusionService) RegisterTypeConverter(converter typeconv
 
 func (illusionService *IllusionService) RegisterFilter(filter filter.Filter) {
 	illusionService.filterArray = append(illusionService.filterArray, filter)
+	sort.SliceStable(illusionService.filterArray, func(i, j int) bool {
+		return illusionService.filterArray[i].GetPriority() > illusionService.filterArray[j].GetPriority()
+	})
 }
 
 func (illusionService *IllusionService) RegisterHandler(path string, httpMethod []string, handlerMethod interface{}) {
@@ -98,7 +102,12 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 	wrapper.Input.TypeConverterMap = illusionService.TypeConverterMap
 	wrapper.DefaultExceptionHandler = illusionService.DefaultBusinessExceptionHandler
 	wrapper.RequestConverterArray = illusionService.RequestConverterArray
-	wrapper.ResponseWriterMap = illusionService.ResponseWriterMap
+	responseWriter, ok := illusionService.ResponseWriterMap[wrapper.OutputType]
+	if ok {
+		wrapper.ResponseWriter = responseWriter
+	} else {
+		panic("not support response type:" + wrapper.OutputType.String())
+	}
 	illusionService.handlerContainer.RegisterWrapper(wrapper)
 
 }
