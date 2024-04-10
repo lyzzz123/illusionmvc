@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
@@ -13,6 +12,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"sync"
 )
 
 type IllusionService struct {
@@ -166,21 +166,24 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 }
 
 func (illusionService *IllusionService) Start(port string) {
-	endRunning := make(chan bool, 1)
+	log.Info("1111111111111111 %v", port)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		defer func() {
-			endRunning <- true
+			log.Info("2222222222 %v", port)
+			wg.Done()
+			log.Info("3333333 %v", port)
 		}()
 		if port == "" {
 			port = "8080"
 		}
 		log.Info("service started at port %v", port)
-		i := 0
-		fmt.Println(1 / i)
 		if err := http.ListenAndServe(":"+port, illusionService); err != nil {
 			panic(err)
 		}
 	}()
-	<-endRunning
-	fmt.Println("-----end-----")
+	log.Info("44444444 %v", port)
+	wg.Wait()
+	log.Info("5555555555 %v", port)
 }
