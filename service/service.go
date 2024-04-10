@@ -9,10 +9,12 @@ import (
 	"github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
 	"net/http"
+	"os"
+	"os/signal"
 	"reflect"
 	"regexp"
 	"sort"
-	"sync"
+	"syscall"
 )
 
 type IllusionService struct {
@@ -166,15 +168,8 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 }
 
 func (illusionService *IllusionService) Start(port string) {
-	log.Info("1111111111111111 %v", port)
-	var wg sync.WaitGroup
-	wg.Add(1)
+
 	go func() {
-		defer func() {
-			log.Info("2222222222 %v", port)
-			wg.Done()
-			log.Info("3333333 %v", port)
-		}()
 		if port == "" {
 			port = "8080"
 		}
@@ -183,7 +178,13 @@ func (illusionService *IllusionService) Start(port string) {
 			panic(err)
 		}
 	}()
-	log.Info("44444444 %v", port)
-	wg.Wait()
-	log.Info("5555555555 %v", port)
+	quit := make(chan os.Signal, 1)
+	// kill 默认会发送syscall.SIGTREN信号
+	// kill -2发送syscall.SIGINT信号，我们常用的ctrl+c就是触发系统SIGINT信号
+	// kill -9发送syscall.SIGKILL信号，但是不能被捕获，所以不需要添加他
+	// signal.Notify把收到的syscall.SIGINT或syscall.SIGTREN信号传给quit
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL) // 此处不会阻塞
+	<-quit                                                                // 阻塞在此，当收到上述两种信号的时候才会往下执行
+	log.Info("ShutDown Server ...")
+
 }
