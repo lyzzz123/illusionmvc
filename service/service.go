@@ -170,7 +170,13 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 func (illusionService *IllusionService) Start(port string) {
 
 	go func() {
-
+		if port == "" {
+			port = "8080"
+		}
+		log.Info("service started at port %v", port)
+		if err := http.ListenAndServe(":"+port, illusionService); err != nil {
+			panic(err)
+		}
 	}()
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
