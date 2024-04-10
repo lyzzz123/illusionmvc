@@ -179,12 +179,8 @@ func (illusionService *IllusionService) Start(port string) {
 		}
 	}()
 	quit := make(chan os.Signal, 1)
-	// kill 默认会发送syscall.SIGTREN信号
-	// kill -2发送syscall.SIGINT信号，我们常用的ctrl+c就是触发系统SIGINT信号
-	// kill -9发送syscall.SIGKILL信号，但是不能被捕获，所以不需要添加他
-	// signal.Notify把收到的syscall.SIGINT或syscall.SIGTREN信号传给quit
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL) // 此处不会阻塞
-	<-quit                                                                // 阻塞在此，当收到上述两种信号的时候才会往下执行
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+	<-quit
 	log.Info("ShutDown Server ...")
 
 }
