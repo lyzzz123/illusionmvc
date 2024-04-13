@@ -141,7 +141,9 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 	defer func() {
 		if msg := recover(); msg != nil {
 			log.Error("%v", msg)
-			illusionService.DefaultSystemExceptionHandler.Handle(writer, nil)
+			if err := illusionService.DefaultSystemExceptionHandler.Handle(writer, nil); err != nil {
+				log.Error("default system exception handler:%s", err.Error())
+			}
 		}
 	}()
 
@@ -179,7 +181,6 @@ func (illusionService *IllusionService) Start(port string) {
 
 	quitChannel := make(chan os.Signal, 1)
 	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-
 	closeChannel := make(chan int, 1)
 
 	go func() {
@@ -201,7 +202,6 @@ func (illusionService *IllusionService) Start(port string) {
 			if err := server.Close(); err != nil {
 				panic(err)
 			}
-
 		})
 		http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 			illusionService.ServeHTTP(writer, request)
