@@ -12,7 +12,9 @@ import (
 )
 
 type Runner struct {
-	Port string `property:"server.port"`
+	Port           string `property:"server.port" require:"false"`
+	ActivePoint    bool   `property:"server.activePoint" require:"false"`
+	ManualShutdown bool   `property:"server.manualShutdown" require:"false"`
 }
 
 func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{}) error {
@@ -51,6 +53,8 @@ func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{
 			RegisterController(controllerObject)
 		}
 	}
+	SetActivePoint(runner.ActivePoint)
+	SetManualShutdown(runner.ManualShutdown)
 	StartService(runner.Port)
 	return nil
 }
