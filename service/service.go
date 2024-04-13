@@ -37,6 +37,10 @@ type IllusionService struct {
 	handlerRouter *router.Router
 
 	DefaultStaticHandler handler.StaticHandler
+
+	ManualShutdown bool
+
+	ActivePoint bool
 }
 
 func (illusionService *IllusionService) RegisterResponseWriter(responseWriter response.Writer) {
@@ -136,6 +140,13 @@ func (illusionService *IllusionService) RegisterLog(logInstance log.Log) {
 	log.RegisterLog(logInstance)
 }
 
+func (illusionService *IllusionService) SetManualShutdown(ManualShutdown bool) {
+	illusionService.ManualShutdown = ManualShutdown
+}
+func (illusionService *IllusionService) SetActivePoint(ActivePoint bool) {
+	illusionService.ActivePoint = ActivePoint
+}
+
 func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 
 	defer func() {
@@ -185,7 +196,7 @@ func (illusionService *IllusionService) Start(port string) {
 
 	go func() {
 		if port == "" {
-			port = "8080"
+			port = "9527"
 		}
 		sort.SliceStable(illusionService.ListenerArray, func(i, j int) bool {
 			return illusionService.ListenerArray[i].GetPriority() > illusionService.ListenerArray[j].GetPriority()
@@ -198,11 +209,21 @@ func (illusionService *IllusionService) Start(port string) {
 		}
 		log.Info("service started at port %v", port)
 		server := http.Server{Addr: ":" + port}
-		http.HandleFunc("/server/close", func(writer http.ResponseWriter, request *http.Request) {
-			if err := server.Close(); err != nil {
-				panic(err)
-			}
-		})
+
+		if illusionService.ActivePoint {
+			http.HandleFunc("/server/active", func(writer http.ResponseWriter, request *http.Request) {
+				writer.Write([]byte("active"))
+			})
+		}
+
+		if illusionService.ManualShutdown {
+			http.HandleFunc("/server/close", func(writer http.ResponseWriter, request *http.Request) {
+				if err := server.Close(); err != nil {
+					panic(err)
+				}
+			})
+		}
+
 		http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 			illusionService.ServeHTTP(writer, request)
 		})
