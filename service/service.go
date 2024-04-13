@@ -5,6 +5,7 @@ import (
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
+	"github.com/lyzzz123/illusionmvc/listener"
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
@@ -19,6 +20,8 @@ import (
 )
 
 type IllusionService struct {
+	ListenerArray []listener.Listener
+
 	TypeConverterMap map[reflect.Type]typeconverter.Converter
 
 	DefaultSystemExceptionHandler exceptionhandler.ExceptionHandler
@@ -125,6 +128,10 @@ func (illusionService *IllusionService) RegisterStaticHandler(staticHandler hand
 	illusionService.DefaultStaticHandler = staticHandler
 }
 
+func (illusionService *IllusionService) RegisterListener(listener listener.Listener) {
+	illusionService.ListenerArray = append(illusionService.ListenerArray, listener)
+}
+
 func (illusionService *IllusionService) RegisterLog(logInstance log.Log) {
 	log.RegisterLog(logInstance)
 }
@@ -174,6 +181,15 @@ func (illusionService *IllusionService) Start(port string) {
 		if port == "" {
 			port = "8080"
 		}
+		sort.SliceStable(illusionService.ListenerArray, func(i, j int) bool {
+			return illusionService.ListenerArray[i].GetPriority() > illusionService.ListenerArray[j].GetPriority()
+		})
+
+		for i := 0; i < len(illusionService.ListenerArray); i++ {
+			if err := illusionService.ListenerArray[i].PreRun(); err != nil {
+				panic(err)
+			}
+		}
 		log.Info("service started at port %v", port)
 		if err := http.ListenAndServe(":"+port, illusionService); err != nil {
 			panic(err)
@@ -182,6 +198,10 @@ func (illusionService *IllusionService) Start(port string) {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
 	<-quit
-	log.Info("ShutDown Server ...")
+	for i := len(illusionService.ListenerArray); i >= 0; i-- {
+		if err := illusionService.ListenerArray[i].PostRun(); err != nil {
+			panic(err)
+		}
+	}
 
 }
