@@ -143,6 +143,7 @@ func (illusionService *IllusionService) RegisterLog(logInstance log.Log) {
 func (illusionService *IllusionService) SetManualShutdown(ManualShutdown bool) {
 	illusionService.ManualShutdown = ManualShutdown
 }
+
 func (illusionService *IllusionService) SetActivePoint(ActivePoint bool) {
 	illusionService.ActivePoint = ActivePoint
 }
@@ -164,7 +165,9 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 		wrapper := illusionService.handlerRouter.GetHandlerWrapper(request.Method, request.URL.Path)
 		if wrapper == nil {
 			writer.WriteHeader(http.StatusNotFound)
-			writer.Write([]byte("404 Not Found"))
+			if _, err := writer.Write([]byte("404 Not Found")); err != nil {
+				panic(err)
+			}
 			return
 		}
 		for i := 0; i < len(wrapper.FilterArray); i++ {
@@ -212,7 +215,9 @@ func (illusionService *IllusionService) Start(port string) {
 
 		if illusionService.ActivePoint {
 			http.HandleFunc("/server/active", func(writer http.ResponseWriter, request *http.Request) {
-				writer.Write([]byte("active"))
+				if _, err := writer.Write([]byte("active")); err != nil {
+					panic(err)
+				}
 			})
 		}
 
