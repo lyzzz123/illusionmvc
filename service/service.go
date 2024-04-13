@@ -177,6 +177,11 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 
 func (illusionService *IllusionService) Start(port string) {
 
+	quitChannel := make(chan os.Signal, 1)
+	signal.Notify(quitChannel, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
+
+	closeChannel := make(chan int, 1)
+
 	go func() {
 		if port == "" {
 			port = "8080"
@@ -191,17 +196,34 @@ func (illusionService *IllusionService) Start(port string) {
 			}
 		}
 		log.Info("service started at port %v", port)
-		if err := http.ListenAndServe(":"+port, illusionService); err != nil {
+		//server := &http.Server{
+		//	Addr:           ":" + port,
+		//	Handler:        illusionService,
+		//	ReadTimeout:    10 * time.Second,
+		//	WriteTimeout:   10 * time.Second,
+		//	MaxHeaderBytes: 1 << 20,
+		//}
+		http.HandleFunc("/server/close", func(writer http.ResponseWriter, request *http.Request) {
+			closeChannel <- 1
+		})
+		http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+			illusionService.ServeHTTP(writer, request)
+		})
+
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
 			panic(err)
 		}
 	}()
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL)
-	<-quit
-	for i := len(illusionService.ListenerArray); i >= 0; i-- {
+
+	select {
+	case <-quitChannel:
+	case <-closeChannel:
+	}
+
+	for i := len(illusionService.ListenerArray) - 1; i >= 0; i-- {
 		if err := illusionService.ListenerArray[i].PostRun(); err != nil {
 			panic(err)
 		}
 	}
-
+	log.Info("illusionmvc closed")
 }
