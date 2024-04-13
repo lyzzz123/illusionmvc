@@ -1,10 +1,12 @@
 package illusionmvc
 
 import (
+	"github.com/lyzzz123/illusionmvc/controller"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
 	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/handler/exceptionhandler"
+	"github.com/lyzzz123/illusionmvc/listener"
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
@@ -16,7 +18,9 @@ var illusionService = &service.IllusionService{}
 
 func init() {
 	defaultLog := &log.DefaultLog{}
-	defaultLog.InitLog()
+	if err := defaultLog.InitLog(); err != nil {
+		panic(err)
+	}
 	illusionService.RegisterLog(defaultLog)
 	illusionService.RegisterTypeConverter(&typeconverter.BoolConvert{})
 	illusionService.RegisterTypeConverter(&typeconverter.BoolPtrConvert{})
@@ -77,12 +81,28 @@ func RegisterHandler(path string, httpMethod []string, handlerMethod interface{}
 	illusionService.RegisterHandler(path, httpMethod, handlerMethod)
 }
 
+func RegisterController(controller controller.Controller) {
+	illusionService.RegisterController(controller)
+}
+
 func RegisterStaticHandler(staticHandler handler.StaticHandler) {
 	illusionService.RegisterStaticHandler(staticHandler)
 }
 
 func RegisterResponseWriter(writer response.Writer) {
 	illusionService.RegisterResponseWriter(writer)
+}
+
+func RegisterListener(listener listener.Listener) {
+	illusionService.RegisterListener(listener)
+}
+
+func SetActivePoint(ActivePoint bool) {
+	illusionService.SetActivePoint(ActivePoint)
+}
+
+func SetManualShutdown(ManualShutdown bool) {
+	illusionService.SetManualShutdown(ManualShutdown)
 }
 
 func RegisterLog(logInstance log.Log) {
