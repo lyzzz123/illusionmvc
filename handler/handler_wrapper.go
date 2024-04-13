@@ -12,17 +12,19 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"strings"
 )
 
 type Wrapper struct {
-	Path           string
-	HasPathValue   bool
-	PathValueRegex *regexp.Regexp
-	Handler        interface{}
-	FilterArray    []filter.Filter
-	HttpMethod     []string
-	OutputType     reflect.Type
-	Input          *wrapper.InputWrapper
+	Path         string
+	HasPathValue bool
+	ReplacedPath string
+	//PathValueRegex *regexp.Regexp
+	Handler     interface{}
+	FilterArray []filter.Filter
+	HttpMethod  []string
+	OutputType  reflect.Type
+	Input       *wrapper.InputWrapper
 
 	DefaultExceptionHandler exceptionhandler.ExceptionHandler
 	RequestConverterMap     map[string]requestconverter.RequestConverter
@@ -139,10 +141,10 @@ func (wrapper *Wrapper) setHeaderValue(request *http.Request, param interface{})
 }
 
 func (wrapper *Wrapper) setPathValue(request *http.Request, param interface{}) error {
-
-	pathValueArray := wrapper.PathValueRegex.FindStringSubmatch(request.URL.Path)
+	pathValueArray := wrapper.getPathValueArray(request.URL.Path)
+	//pathValueArray := wrapper.PathValueRegex.FindStringSubmatch(request.URL.Path)
 	reflectParamValue := reflect.ValueOf(param).Elem()
-	for i := 1; i < len(pathValueArray); i++ {
+	for i := 0; i < len(pathValueArray); i++ {
 		if index, ok := wrapper.Input.PathValuePositionMap[i]; ok {
 			field := reflectParamValue.Field(index)
 			if converter, ok := wrapper.Input.TypeConverterMap[field.Type()]; ok {
@@ -155,6 +157,18 @@ func (wrapper *Wrapper) setPathValue(request *http.Request, param interface{}) e
 		}
 	}
 	return nil
+}
+
+func (wrapper *Wrapper) getPathValueArray(path string) []string {
+	subPathArray := strings.Split(path, "/")
+	replacedSubPathArray := strings.Split(wrapper.ReplacedPath, "/")
+	pathValueArray := make([]string, 0)
+	for i := 0; i < len(subPathArray); i++ {
+		if replacedSubPathArray[i] == "*" {
+			pathValueArray = append(pathValueArray, subPathArray[i])
+		}
+	}
+	return pathValueArray
 }
 
 func CreateHandlerWrapper(path string, httpMethod []string, handlerMethod interface{}) *Wrapper {
@@ -176,7 +190,7 @@ func CreateHandlerWrapper(path string, httpMethod []string, handlerMethod interf
 
 	hw := &Wrapper{Input: &wrapper.InputWrapper{}}
 	hw.Path = path
-	hw.PathValueRegex = utils.CreatePathValueRegex(path)
+	hw.ReplacedPath = utils.CreateReplacedPath(path)
 	hw.Handler = handlerMethod
 	if pt, err := getInputType(handlerMethod); err != nil {
 		panic(err)
@@ -250,9 +264,9 @@ func createPathValueNameIndexMap(path string) map[string]int {
 	pathValueRegex := regexp.MustCompile("{[^/]+}")
 	replacedPathValuePath := pathValueRegex.ReplaceAllString(path, "{([^/]+)}")
 	replacedPathValueRegex := regexp.MustCompile("^" + replacedPathValuePath + "$")
-	pathValueNameArray := replacedPathValueRegex.FindStringSubmatch(path)
+	pathValueNameArray := replacedPathValueRegex.FindStringSubmatch(path)[1:]
 	r := make(map[string]int, len(pathValueNameArray)-1)
-	for i := 1; i < len(pathValueNameArray); i++ {
+	for i := 0; i < len(pathValueNameArray); i++ {
 		r[pathValueNameArray[i]] = i
 	}
 	return r

@@ -16,7 +16,7 @@ var illusionService = &service.IllusionService{}
 
 func init() {
 	defaultLog := &log.DefaultLog{}
-	defaultLog.Init()
+	defaultLog.InitLog()
 	illusionService.RegisterLog(defaultLog)
 	illusionService.RegisterTypeConverter(&typeconverter.BoolConvert{})
 	illusionService.RegisterTypeConverter(&typeconverter.BoolPtrConvert{})

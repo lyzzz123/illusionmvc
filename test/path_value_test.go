@@ -1,11 +1,28 @@
 package test
 
 import (
+	"fmt"
 	"github.com/lyzzz123/illusionmvc"
 	"github.com/lyzzz123/illusionmvc/constant/httpmethod"
 	"github.com/lyzzz123/illusionmvc/response"
+	"io/ioutil"
+	"net/http"
 	"testing"
+	"time"
 )
+
+func TestPathValueClient(t *testing.T) {
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	resp, err := client.Get("http://localhost:9527/path_value_test/1212/2323")
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	result, _ := ioutil.ReadAll(resp.Body)
+
+	fmt.Println(string(result))
+}
 
 type PathValueParam struct {
 	Hello string `paramValue:"hello_a"`

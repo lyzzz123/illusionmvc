@@ -8,6 +8,7 @@ import (
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/request/requestconverter"
 	"github.com/lyzzz123/illusionmvc/response"
+	"github.com/lyzzz123/illusionmvc/router"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,7 +31,7 @@ type IllusionService struct {
 
 	filterArray []filter.Filter
 
-	handlerContainer *handler.Container
+	handlerRouter *router.Router
 
 	DefaultStaticHandler handler.StaticHandler
 }
@@ -73,23 +74,23 @@ func (illusionService *IllusionService) RegisterFilter(filter filter.Filter) {
 
 func (illusionService *IllusionService) RegisterHandler(path string, httpMethod []string, handlerMethod interface{}) {
 
-	if illusionService.handlerContainer == nil {
-		illusionService.handlerContainer = &handler.Container{
+	if illusionService.handlerRouter == nil {
+		illusionService.handlerRouter = &router.Router{
 			GetMapping: &handler.WrapperMapping{
-				WrapperMapping:        make(map[string]*handler.Wrapper),
-				PathValueWrapperArray: make([]*handler.Wrapper, 0),
+				WrapperMapping:          make(map[string]*handler.Wrapper),
+				PathValueWrapperMapping: &handler.PathTreeMap{},
 			},
 			PostMapping: &handler.WrapperMapping{
-				WrapperMapping:        make(map[string]*handler.Wrapper),
-				PathValueWrapperArray: make([]*handler.Wrapper, 0),
+				WrapperMapping:          make(map[string]*handler.Wrapper),
+				PathValueWrapperMapping: &handler.PathTreeMap{},
 			},
 			PutMapping: &handler.WrapperMapping{
-				WrapperMapping:        make(map[string]*handler.Wrapper),
-				PathValueWrapperArray: make([]*handler.Wrapper, 0),
+				WrapperMapping:          make(map[string]*handler.Wrapper),
+				PathValueWrapperMapping: &handler.PathTreeMap{},
 			},
 			DeleteMapping: &handler.WrapperMapping{
-				WrapperMapping:        make(map[string]*handler.Wrapper),
-				PathValueWrapperArray: make([]*handler.Wrapper, 0),
+				WrapperMapping:          make(map[string]*handler.Wrapper),
+				PathValueWrapperMapping: &handler.PathTreeMap{},
 			},
 		}
 	}
@@ -116,7 +117,7 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 	} else {
 		panic("not support response type:" + wrapper.OutputType.String())
 	}
-	illusionService.handlerContainer.RegisterWrapper(wrapper)
+	illusionService.handlerRouter.RegisterHandlerWrapper(wrapper)
 
 }
 
@@ -140,7 +141,7 @@ func (illusionService *IllusionService) ServeHTTP(writer http.ResponseWriter, re
 	if illusionService.DefaultStaticHandler != nil && illusionService.DefaultStaticHandler.Match(request) {
 		illusionService.DefaultStaticHandler.HandleStatic(writer, request)
 	} else {
-		wrapper := illusionService.handlerContainer.GetWrapper(request.Method, request.URL.Path)
+		wrapper := illusionService.handlerRouter.GetHandlerWrapper(request.Method, request.URL.Path)
 		if wrapper == nil {
 			writer.WriteHeader(http.StatusNotFound)
 			writer.Write([]byte("404 Not Found"))

@@ -16,3 +16,9 @@ func CreatePathValueRegex(path string) *regexp.Regexp {
 	replacedPathValuePattern := pathValuePatternRegex.ReplaceAllString(path, "([^/]+)")
 	return regexp.MustCompile("^" + replacedPathValuePattern + "$")
 }
+func CreateReplacedPath(path string) string {
+	pathValuePattern := "{[^/]+}"
+	pathValuePatternRegex := regexp.MustCompile(pathValuePattern)
+	replacedPath := pathValuePatternRegex.ReplaceAllString(path, "*")
+	return replacedPath
+}

@@ -32,9 +32,9 @@ func (t Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 type DefaultLog struct {
 }
 
-func (defaultLog *DefaultLog) Init() error {
+func (defaultLog *DefaultLog) InitLog() error {
 	logrus.SetLevel(logrus.DebugLevel)
-	logrus.SetReportCaller(true)
+	//logrus.SetReportCaller(true)
 	logrus.SetOutput(os.Stdout)
 	logrus.SetFormatter(&Formatter{})
 	return nil
