@@ -196,22 +196,19 @@ func (illusionService *IllusionService) Start(port string) {
 			}
 		}
 		log.Info("service started at port %v", port)
-		//server := &http.Server{
-		//	Addr:           ":" + port,
-		//	Handler:        illusionService,
-		//	ReadTimeout:    10 * time.Second,
-		//	WriteTimeout:   10 * time.Second,
-		//	MaxHeaderBytes: 1 << 20,
-		//}
+		server := http.Server{Addr: ":" + port}
 		http.HandleFunc("/server/close", func(writer http.ResponseWriter, request *http.Request) {
-			closeChannel <- 1
+			if err := server.Close(); err != nil {
+				panic(err)
+			}
+
 		})
 		http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
 			illusionService.ServeHTTP(writer, request)
 		})
 
-		if err := http.ListenAndServe(":"+port, nil); err != nil {
-			panic(err)
+		if err := server.ListenAndServe(); err != nil {
+			closeChannel <- 1
 		}
 	}()
 
@@ -225,5 +222,5 @@ func (illusionService *IllusionService) Start(port string) {
 			panic(err)
 		}
 	}
-	log.Info("illusionmvc closed")
+	log.Info("service closed")
 }

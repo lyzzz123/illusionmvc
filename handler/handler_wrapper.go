@@ -11,7 +11,6 @@ import (
 	"github.com/lyzzz123/illusionmvc/wrapper"
 	"net/http"
 	"reflect"
-	"regexp"
 	"strings"
 )
 
@@ -142,7 +141,6 @@ func (wrapper *Wrapper) setHeaderValue(request *http.Request, param interface{})
 
 func (wrapper *Wrapper) setPathValue(request *http.Request, param interface{}) error {
 	pathValueArray := wrapper.getPathValueArray(request.URL.Path)
-	//pathValueArray := wrapper.PathValueRegex.FindStringSubmatch(request.URL.Path)
 	reflectParamValue := reflect.ValueOf(param).Elem()
 	for i := 0; i < len(pathValueArray); i++ {
 		if index, ok := wrapper.Input.PathValuePositionMap[i]; ok {
@@ -261,14 +259,30 @@ func checkRequestAndResponse(inputWrapper *wrapper.InputWrapper) {
 }
 
 func createPathValueNameIndexMap(path string) map[string]int {
-	pathValueRegex := regexp.MustCompile("{[^/]+}")
-	replacedPathValuePath := pathValueRegex.ReplaceAllString(path, "{([^/]+)}")
-	replacedPathValueRegex := regexp.MustCompile("^" + replacedPathValuePath + "$")
-	pathValueNameArray := replacedPathValueRegex.FindStringSubmatch(path)[1:]
-	r := make(map[string]int, len(pathValueNameArray)-1)
-	for i := 0; i < len(pathValueNameArray); i++ {
-		r[pathValueNameArray[i]] = i
+	pathValueArray := strings.Split(path, "/")
+	subPathNameArray := make([]string, 0)
+
+	for i := 0; i < len(pathValueArray); i++ {
+		if strings.HasPrefix(pathValueArray[i], "{") &&
+			strings.HasSuffix(pathValueArray[i], "}") {
+			replacedSubPathName := strings.TrimRight(strings.TrimLeft(pathValueArray[i], "{"), "}")
+			subPathNameArray = append(subPathNameArray, replacedSubPathName)
+		}
 	}
+	r := make(map[string]int, len(subPathNameArray))
+	for i := 0; i < len(subPathNameArray); i++ {
+		r[subPathNameArray[i]] = i
+	}
+
+	//
+	//pathValueRegex := regexp.MustCompile("{[^/]+}")
+	//replacedPathValuePath := pathValueRegex.ReplaceAllString(path, "{([^/]+)}")
+	//replacedPathValueRegex := regexp.MustCompile("^" + replacedPathValuePath + "$")
+	//pathValueNameArray := replacedPathValueRegex.FindStringSubmatch(path)[1:]
+	//r := make(map[string]int, len(pathValueNameArray)-1)
+	//for i := 0; i < len(pathValueNameArray); i++ {
+	//	r[pathValueNameArray[i]] = i
+	//}
 	return r
 }
 
