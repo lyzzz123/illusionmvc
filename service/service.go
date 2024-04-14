@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/lyzzz123/illusionmvc"
 	"github.com/lyzzz123/illusionmvc/controller"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
@@ -133,7 +132,7 @@ func (illusionService *IllusionService) RegisterHandler(path string, httpMethod 
 func (illusionService *IllusionService) RegisterController(controller controller.Controller) {
 	controllerExport := controller.Export()
 	for i := 0; i < len(controllerExport); i++ {
-		illusionmvc.RegisterHandler(controllerExport[i].Path, controllerExport[i].HttpMethod, controllerExport[i].HandlerMethod)
+		illusionService.RegisterHandler(controllerExport[i].Path, controllerExport[i].HttpMethod, controllerExport[i].HandlerMethod)
 	}
 }
 
