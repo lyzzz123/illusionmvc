@@ -60,7 +60,7 @@ func (pathTreeMap *PathTreeMap) PutHandlerWrapper(path string, handlerWrapper *W
 		}
 	}
 	if findNode.HandlerWrapper != nil {
-		panic("路径重复")
+		panic("path duplicate:" + path)
 	}
 	findNode.HandlerWrapper = handlerWrapper
 }
