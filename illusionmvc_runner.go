@@ -59,12 +59,12 @@ func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{
 	}
 	SetActivePoint(runner.ActivePoint)
 	SetManualShutdown(runner.ManualShutdown)
-	StartService(runner.Port)
 	if runner.StaticSourcePath != "" && runner.StaticSourceDir != "" {
 		RegisterStaticHandler(&handler.DefaultStaticHandler{
 			StaticPath: runner.StaticSourcePath,
 			StaticDir:  runner.StaticSourceDir,
 		})
 	}
+	StartService(runner.Port)
 	return nil
 }
