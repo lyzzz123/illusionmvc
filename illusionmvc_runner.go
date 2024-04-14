@@ -49,8 +49,8 @@ func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{
 			RegisterResponseWriter(registerResponseWriter)
 		}
 
-		if registerResponseWriter, ok := registerObject.(response.Writer); ok {
-			RegisterResponseWriter(registerResponseWriter)
+		if registerListener, ok := registerObject.(listener.Listener); ok {
+			RegisterListener(registerListener)
 		}
 
 		if controllerObject, ok := registerObject.(controller.Controller); ok {
