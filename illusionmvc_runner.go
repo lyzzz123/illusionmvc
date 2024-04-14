@@ -4,6 +4,7 @@ import (
 	"github.com/lyzzz123/illusionmvc/controller"
 	"github.com/lyzzz123/illusionmvc/converter/typeconverter"
 	"github.com/lyzzz123/illusionmvc/filter"
+	"github.com/lyzzz123/illusionmvc/handler"
 	"github.com/lyzzz123/illusionmvc/listener"
 	"github.com/lyzzz123/illusionmvc/log"
 	"github.com/lyzzz123/illusionmvc/request/requestconverter"
@@ -15,6 +16,9 @@ type Runner struct {
 	Port           string `property:"server.port" require:"false"`
 	ActivePoint    bool   `property:"server.activePoint" require:"false"`
 	ManualShutdown bool   `property:"server.manualShutdown" require:"false"`
+
+	StaticSourcePath string `property:"static.source.path" require:"false"`
+	StaticSourceDir  string `property:"static.source.dir" require:"false"`
 }
 
 func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{}) error {
@@ -56,5 +60,11 @@ func (runner *Runner) AfterRunAction(objectContainer map[reflect.Type]interface{
 	SetActivePoint(runner.ActivePoint)
 	SetManualShutdown(runner.ManualShutdown)
 	StartService(runner.Port)
+	if runner.StaticSourcePath != "" && runner.StaticSourceDir != "" {
+		RegisterStaticHandler(&handler.DefaultStaticHandler{
+			StaticPath: runner.StaticSourcePath,
+			StaticDir:  runner.StaticSourceDir,
+		})
+	}
 	return nil
 }

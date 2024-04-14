@@ -9,8 +9,8 @@ import (
 func TestStaticResource(t *testing.T) {
 
 	illusionmvc.RegisterStaticHandler(&handler.DefaultStaticHandler{
-		StaticPaths: "/static/",
-		StaticDir:   "F:\\temp",
+		StaticPath: "/static/",
+		StaticDir:  "F:\\temp",
 	})
 	illusionmvc.StartService("9527")
 

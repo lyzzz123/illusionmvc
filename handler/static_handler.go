@@ -14,18 +14,18 @@ type StaticHandler interface {
 }
 
 type DefaultStaticHandler struct {
-	StaticPaths string
+	StaticPath string
 
 	StaticDir string
 }
 
 func (staticHandler *DefaultStaticHandler) Match(request *http.Request) bool {
-	return strings.HasPrefix(request.URL.Path, staticHandler.StaticPaths)
+	return strings.HasPrefix(request.URL.Path, staticHandler.StaticPath)
 }
 
 func (staticHandler *DefaultStaticHandler) HandleStatic(writer http.ResponseWriter, request *http.Request) {
 
-	relativePath := strings.TrimPrefix(request.URL.Path, staticHandler.StaticPaths)
+	relativePath := strings.TrimPrefix(request.URL.Path, staticHandler.StaticPath)
 	filePath := path.Join(staticHandler.StaticDir, relativePath)
 	file, err := os.Open(filePath)
 	if err != nil {
