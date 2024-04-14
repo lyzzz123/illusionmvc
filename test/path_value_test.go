@@ -37,7 +37,7 @@ func PathValueTest(param *PathValueParam) (*response.JSONResponse, error) {
 }
 
 func TestPathValue(t *testing.T) {
-
+	illusionmvc.SetManualShutdown(true)
 	illusionmvc.RegisterHandler("/path_value_test/{hello_a}/{name_b}", []string{httpmethod.POST, httpmethod.GET}, PathValueTest)
 	illusionmvc.StartService("9527")
 

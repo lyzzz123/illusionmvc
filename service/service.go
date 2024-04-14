@@ -17,6 +17,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strings"
 	"syscall"
 )
 
@@ -245,7 +246,9 @@ func (illusionService *IllusionService) Start(port string) {
 		})
 
 		if err := server.ListenAndServe(); err != nil {
-			panic(err)
+			if !strings.HasSuffix(err.Error(), "Server closed") {
+				panic(err)
+			}
 		}
 	}()
 
