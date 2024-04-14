@@ -206,6 +206,9 @@ func (illusionService *IllusionService) Start(port string) {
 	closeChannel := make(chan int, 1)
 
 	go func() {
+		defer func() {
+			closeChannel <- 1
+		}()
 		if port == "" {
 			port = "9527"
 		}
@@ -242,7 +245,7 @@ func (illusionService *IllusionService) Start(port string) {
 		})
 
 		if err := server.ListenAndServe(); err != nil {
-			closeChannel <- 1
+			panic(err)
 		}
 	}()
 
